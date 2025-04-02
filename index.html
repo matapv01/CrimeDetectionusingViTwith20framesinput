@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Crime Detection System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">AI Crime Detection System</h1>
+            <p class="text-gray-600">Phát hiện và phân tích hành vi đáng ngờ từ ảnh và video</p>
+        </header>
+
+        <div class="max-w-3xl mx-auto">
+            <!-- Tab Navigation -->
+            <div class="mb-8 flex justify-center space-x-4">
+                <button id="image-tab" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-image mr-2"></i>Phân tích từ Ảnh
+                </button>
+                <button id="video-tab" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    <i class="fas fa-video mr-2"></i>Phân tích từ Video
+                </button>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <!-- Image Upload Section -->
+                <div id="image-section" class="upload-section">
+                    <div class="upload-area mb-8">
+                        <div id="image-drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 mb-2">Kéo thả ảnh vào đây hoặc</p>
+                            <input type="file" id="image-input" class="hidden" accept="image/*">
+                            <button class="browse-button bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                                Chọn ảnh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Upload Section -->
+                <div id="video-section" class="upload-section hidden">
+                    <div class="upload-area mb-8">
+                        <div id="video-drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 mb-2">Kéo thả video vào đây hoặc</p>
+                            <input type="file" id="video-input" class="hidden" accept="video/*">
+                            <button class="browse-button bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                                Chọn video
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div id="preview" class="hidden">
+                    <h2 class="text-xl font-semibold mb-4">Kết quả phân tích</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-lg font-medium mb-2">File gốc</h3>
+                            <img id="original-image" class="w-full rounded-lg shadow hidden" alt="Original">
+                            <video id="original-video" class="w-full rounded-lg shadow hidden" controls></video>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium mb-2">Kết quả phát hiện</h3>
+                            <img id="result-image" class="w-full rounded-lg shadow hidden" alt="Result">
+                            <video id="result-video" class="w-full rounded-lg shadow hidden" controls></video>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <button id="download-button" class="bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 transition-colors hidden">
+                            <i class="fas fa-download mr-2"></i>Tải xuống kết quả
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Section -->
+                <div id="loading" class="hidden text-center py-8">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Đang xử lý...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const imageTab = document.getElementById('image-tab');
+            const videoTab = document.getElementById('video-tab');
+            const imageSection = document.getElementById('image-section');
+            const videoSection = document.getElementById('video-section');
+
+            imageTab.addEventListener('click', () => {
+                imageTab.classList.replace('bg-gray-500', 'bg-blue-500');
+                videoTab.classList.replace('bg-blue-500', 'bg-gray-500');
+                imageSection.classList.remove('hidden');
+                videoSection.classList.add('hidden');
+            });
+
+            videoTab.addEventListener('click', () => {
+                videoTab.classList.replace('bg-gray-500', 'bg-blue-500');
+                imageTab.classList.replace('bg-blue-500', 'bg-gray-500');
+                videoSection.classList.remove('hidden');
+                imageSection.classList.add('hidden');
+            });
+
+            // File upload handling
+            const imageDropZone = document.getElementById('image-drop-zone');
+            const videoDropZone = document.getElementById('video-drop-zone');
+            const imageInput = document.getElementById('image-input');
+            const videoInput = document.getElementById('video-input');
+            const preview = document.getElementById('preview');
+            const loading = document.getElementById('loading');
+            const originalImage = document.getElementById('original-image');
+            const originalVideo = document.getElementById('original-video');
+            const resultImage = document.getElementById('result-image');
+            const resultVideo = document.getElementById('result-video');
+            const downloadButton = document.getElementById('download-button');
+
+            // Browse button click handlers
+            document.querySelectorAll('.browse-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const input = button.parentElement.querySelector('input[type="file"]');
+                    input.click();
+                });
+            });
+
+            // Drag and drop handlers
+            [imageDropZone, videoDropZone].forEach(dropZone => {
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('border-blue-500');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('border-blue-500');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-blue-500');
+                    const file = e.dataTransfer.files[0];
+                    const isImage = dropZone.id === 'image-drop-zone';
+                    if (file && (isImage ? file.type.startsWith('image/') : file.type.startsWith('video/'))) {
+                        handleFile(file, isImage);
+                    }
+                });
+            });
+
+            // File input change handlers
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleFile(file, true);
+            });
+
+            videoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleFile(file, false);
+            });
+
+            async function handleFile(file, isImage) {
+                // Reset and show preview
+                preview.classList.remove('hidden');
+                loading.classList.remove('hidden');
+                originalImage.classList.add('hidden');
+                originalVideo.classList.add('hidden');
+                resultImage.classList.add('hidden');
+                resultVideo.classList.add('hidden');
+                downloadButton.classList.add('hidden');
+
+                // Show original file
+                if (isImage) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        originalImage.src = e.target.result;
+                        originalImage.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    const url = URL.createObjectURL(file);
+                    originalVideo.src = url;
+                    originalVideo.classList.remove('hidden');
+                }
+
+                // Upload file
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch(isImage ? '/upload/image' : '/upload/video', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert('Lỗi: ' + data.error);
+                        loading.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Hiển thị kết quả
+                    if (isImage) {
+                        resultImage.src = `data:image/jpeg;base64,${data.image_base64}`;
+                        resultImage.classList.remove('hidden');
+                    } else {
+                        const videoUrl = URL.createObjectURL(new Blob([data.video_base64], { type: 'video/mp4' }));
+                        resultVideo.src = videoUrl;
+                        resultVideo.classList.remove('hidden');
+                    }
+
+                    loading.classList.add('hidden');
+                    downloadButton.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xử lý file');
+                    loading.classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
