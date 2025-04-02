@@ -150,7 +150,7 @@ The system can detect 14 different actions:
 
 ### Video Processing Pipeline
 
-Video processing is done in the [`VideoProcessor`](c:\Users\pvmkt\OneDrive\Desktop\CrimeDetectionusingViTwith20framesinput\Sever.ipynb#L46) class, which:
+Video processing is done in the [`VideoProcessor`](Sever.ipynb#L46) class, which:
 1. Extracts frames from video input
 2. Groups frames into chunks of 20
 3. Processes each chunk through the ViT model
@@ -160,7 +160,7 @@ Video processing is done in the [`VideoProcessor`](c:\Users\pvmkt\OneDrive\Deskt
 
 ### Image Processing Pipeline
 
-Image processing is handled by the [`predict_image`](c:\Users\pvmkt\OneDrive\Desktop\CrimeDetectionusingViTwith20framesinput\Sever.ipynb#L252) function, which:
+Image processing is handled by the [`predict_image`](Sever.ipynb#L252) function, which:
 1. Loads and preprocesses the image
 2. Passes it through the ViT model
 3. Retrieves prediction and confidence score
